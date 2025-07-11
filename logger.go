@@ -10,13 +10,13 @@ import (
 var std = New()
 
 type logger struct {
-	op        *option
+	opt       *option
 	mu        sync.Mutex
 	entrypool *sync.Pool
 }
 
 func New(ops ...Option) *logger {
-	logger := &logger{op: initOptions(ops...)}
+	logger := &logger{opt: initOptions(ops...)}
 	logger.entrypool = &sync.Pool{New: func() any { return NewEntry(logger) }}
 
 	return logger
@@ -27,7 +27,7 @@ func (l *logger) SetOptions(ops ...Option) {
 	defer l.mu.Unlock()
 
 	for _, op := range ops {
-		op(l.op)
+		op(l.opt)
 	}
 }
 
@@ -36,7 +36,7 @@ func SetOptions(ops ...Option) {
 	defer std.mu.Unlock()
 
 	for _, op := range ops {
-		op(std.op)
+		op(std.opt)
 	}
 }
 
@@ -49,7 +49,7 @@ func (l *logger) entry() *entry {
 }
 
 func (l *logger) Write(data []byte) (n int, err error) {
-	l.entry().write(l.op.stdLevel, FmtEmptySeparate, *(*string)(unsafe.Pointer(&data)))
+	l.entry().write(l.opt.stdLevel, FmtEmptySeparate, *(*string)(unsafe.Pointer(&data)))
 	return 0, nil
 }
 

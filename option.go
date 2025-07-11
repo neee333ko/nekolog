@@ -20,6 +20,19 @@ const (
 
 type Level uint8
 
+var levelMap = map[int]string{
+	0: "Debug",
+	1: "Info",
+	2: "Warn",
+	3: "Error",
+	4: "Panic",
+	5: "Fatal",
+}
+
+func levelUnmarshal(l Level) string {
+	return levelMap[int(l)]
+}
+
 type option struct {
 	output        io.Writer
 	level         Level
@@ -42,7 +55,7 @@ func initOptions(ops ...Option) *option {
 	}
 
 	if option.formatter == nil {
-		option.formatter = &JsonFormatter{}
+		option.formatter = &TextFormatter{}
 	}
 
 	return option

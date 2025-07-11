@@ -1,25 +1,30 @@
 package nekolog
 
 import (
+	"fmt"
+	"strconv"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
 )
 
 type JsonFormatter struct {
-	disableField bool
+	disableBasicField bool
 }
 
 func (f *JsonFormatter) Format(e *entry) error {
-	if !f.disableField {
+	if !f.disableBasicField {
+		e.m["level"] = levelUnmarshal(e.level)
 		e.m["time"] = e.time.Format(time.RFC3339)
-		e.m["level"] = e.level
-		e.m["file"] = e.file
-		e.m["line"] = e.line
-		e.m["function"] = e.function
+		e.m["file"] = e.file + ":" + strconv.Itoa(e.line)
+		e.m["func"] = e.function
 	}
 
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	if e.format == FmtEmptySeparate {
+		e.m["msg"] = fmt.Sprint(e.args...)
+	} else {
+		e.m["msg"] = fmt.Sprintf(e.format, e.args...)
+	}
 
-	return json.NewEncoder(e.buffer).Encode(e.m)
+	return jsoniter.NewEncoder(e.buffer).Encode(e.m)
 }
